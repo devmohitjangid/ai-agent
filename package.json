@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@huggingface/inference": "^4.13.30",
+    "@openrouter/ai-sdk-provider": "^3.1.0",
+    "ai": "^7.0.113",
     "next": "16.3.6",
     "react": "19.2.8",
     "react-dom": "19.2.8"
