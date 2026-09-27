@@ -1,5 +1,3 @@
-import { puter } from "@heyputer/puter.js";
-
 export async function generateImage(
   prompt: string
 ): Promise<string> {
@@ -10,29 +8,26 @@ export async function generateImage(
   }
 
   try {
-    console.log(
-      "Generating image:",
-      cleanPrompt
-    );
+    const response = await fetch("/api/image", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt: cleanPrompt }),
+    });
 
-    const image = await puter.ai.txt2img(
-      cleanPrompt,
-      {
-        model: "black-forest-labs/flux-schnell",
-      }
-    );
+    const data = (await response.json()) as {
+      image?: string;
+      error?: string;
+    };
 
-    if (!image?.src) {
+    if (!response.ok || !data.image) {
       throw new Error(
-        "Puter returned an invalid image response."
+        data.error || `Image request failed (${response.status}).`
       );
     }
 
-    console.log(
-      "Image generated successfully."
-    );
-
-    return image.src;
+    return data.image;
   } catch (error: unknown) {
     console.error(
       "Puter image generation failed:",
