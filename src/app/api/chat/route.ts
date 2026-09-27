@@ -1,7 +1,4 @@
 import { openrouter } from "@/lib/openrouter";
-import { parseCommand } from "@/lib/commands";
-import { generateImage } from "@/lib/image-generator";
-
 import { generateText } from "ai";
 
 export async function POST(req: Request) {
@@ -25,47 +22,6 @@ export async function POST(req: Request) {
     }
 
     const cleanMessage = message.trim();
-    const command = parseCommand(cleanMessage);
-
-    // =====================================================
-    // IMAGE GENERATION
-    // =====================================================
-
-    if (command.type === "image") {
-      if (!command.prompt?.trim()) {
-        return Response.json(
-          {
-            error: "Please provide an image prompt.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      console.log(
-        "Generating image:",
-        command.prompt
-      );
-
-      const image = await generateImage(command.prompt);
-
-      console.log(
-        "Image generated successfully"
-      );
-
-      return Response.json({
-        type: "image",
-        prompt: command.prompt,
-        image,
-      });
-    }
-
-    // =====================================================
-    
-    // =====================================================
-    // NORMAL QUESTION / ANSWER
-    // =====================================================
 
     console.log(
       "Generating chat response:",
@@ -87,7 +43,7 @@ Use Markdown when useful.
 Do not unnecessarily repeat the user's question.
       `.trim(),
 
-      prompt: command.prompt?.trim() || cleanMessage,
+      prompt: cleanMessage,
     });
 
     if (!result.text?.trim()) {
