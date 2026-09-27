@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 type Message = {
   role: "user" | "assistant";
-  type?: "chat" | "image" | "voice" | "error";
+  type?: "chat" | "image" | "error";
   content?: string;
   image?: string;
-  audio?: string;
   prompt?: string;
 };
 
@@ -67,7 +66,6 @@ export default function Home() {
           type: data.type,
           content: data.reply,
           image: data.image,
-          audio: data.audio,
           prompt: data.prompt,
         },
       ]);
@@ -90,6 +88,7 @@ export default function Home() {
 
   const clearChat = () => {
     if (loading) return;
+
     setMessages([]);
     setMessage("");
 
@@ -159,12 +158,15 @@ export default function Home() {
             <h1>What can I help you with?</h1>
 
             <p>
-              Ask anything, create an image, or generate voice content.
+              Ask anything or create an image.
             </p>
 
             <div className="quick-actions">
+              {/* Ask anything */}
               <button
-                onClick={() => usePrompt("Explain something to me")}
+                onClick={() =>
+                  usePrompt("Explain something to me")
+                }
                 className="quick-card"
               >
                 <div className="quick-icon">
@@ -187,6 +189,7 @@ export default function Home() {
                 </div>
               </button>
 
+              {/* Image generation */}
               <button
                 onClick={() =>
                   usePrompt(
@@ -204,8 +207,20 @@ export default function Home() {
                     stroke="currentColor"
                     strokeWidth="1.8"
                   >
-                    <rect x="3" y="4" width="18" height="16" rx="2" />
-                    <circle cx="8.5" cy="9" r="1.5" />
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="16"
+                      rx="2"
+                    />
+
+                    <circle
+                      cx="8.5"
+                      cy="9"
+                      r="1.5"
+                    />
+
                     <path d="m21 15-5-5L5 20" />
                   </svg>
                 </div>
@@ -213,36 +228,6 @@ export default function Home() {
                 <div>
                   <strong>Create an image</strong>
                   <span>Generate with /image</span>
-                </div>
-              </button>
-
-              <button
-                onClick={() =>
-                  usePrompt(
-                    "/voice Hello, welcome to my AI assistant."
-                  )
-                }
-                className="quick-card"
-              >
-                <div className="quick-icon">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <rect x="9" y="3" width="6" height="12" rx="3" />
-                    <path d="M5 11a7 7 0 0 0 14 0" />
-                    <path d="M12 18v3" />
-                    <path d="M8 21h8" />
-                  </svg>
-                </div>
-
-                <div>
-                  <strong>Create voice</strong>
-                  <span>Generate with /voice</span>
                 </div>
               </button>
             </div>
@@ -264,118 +249,80 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="assistant-message">
+                    {/* Normal chat */}
                     {msg.type === "chat" && (
                       <div className="assistant-content">
                         {msg.content}
                       </div>
                     )}
 
-                    {msg.type === "image" && msg.image && (
-                      <div className="media-card">
-                        <div className="media-header">
-                          <div className="media-title">
-                            <div className="media-icon">
-                              <svg
-                                width="17"
-                                height="17"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                              >
-                                <rect
-                                  x="3"
-                                  y="4"
-                                  width="18"
-                                  height="16"
-                                  rx="2"
-                                />
-                                <circle cx="8.5" cy="9" r="1.5" />
-                                <path d="m21 15-5-5L5 20" />
-                              </svg>
+                    {/* Generated image */}
+                    {msg.type === "image" &&
+                      msg.image && (
+                        <div className="media-card">
+                          <div className="media-header">
+                            <div className="media-title">
+                              <div className="media-icon">
+                                <svg
+                                  width="17"
+                                  height="17"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                >
+                                  <rect
+                                    x="3"
+                                    y="4"
+                                    width="18"
+                                    height="16"
+                                    rx="2"
+                                  />
+
+                                  <circle
+                                    cx="8.5"
+                                    cy="9"
+                                    r="1.5"
+                                  />
+
+                                  <path d="m21 15-5-5L5 20" />
+                                </svg>
+                              </div>
+
+                              <span>
+                                Generated image
+                              </span>
                             </div>
 
-                            <span>Generated image</span>
+                            <a
+                              href={msg.image}
+                              download="generated-image.png"
+                              className="download-button"
+                            >
+                              Download
+                            </a>
                           </div>
 
-                          <a
-                            href={msg.image}
-                            download="generated-image.png"
-                            className="download-button"
-                          >
-                            Download
-                          </a>
-                        </div>
-
-                        <div className="image-container">
-                          <img
-                            src={msg.image}
-                            alt={msg.prompt || "Generated image"}
-                          />
-                        </div>
-
-                        {msg.prompt && (
-                          <div className="media-prompt">
-                            <span>Prompt</span>
-                            <p>{msg.prompt}</p>
+                          <div className="image-container">
+                            <img
+                              src={msg.image}
+                              alt={
+                                msg.prompt ||
+                                "Generated image"
+                              }
+                            />
                           </div>
-                        )}
-                      </div>
-                    )}
 
-                    {msg.type === "voice" && msg.audio && (
-                      <div className="media-card voice-card">
-                        <div className="media-header">
-                          <div className="media-title">
-                            <div className="media-icon">
-                              <svg
-                                width="17"
-                                height="17"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                              >
-                                <rect
-                                  x="9"
-                                  y="3"
-                                  width="6"
-                                  height="12"
-                                  rx="3"
-                                />
-                                <path d="M5 11a7 7 0 0 0 14 0" />
-                                <path d="M12 18v3" />
-                                <path d="M8 21h8" />
-                              </svg>
+                          {msg.prompt && (
+                            <div className="media-prompt">
+                              <span>Prompt</span>
+                              <p>{msg.prompt}</p>
                             </div>
-
-                            <span>Generated voice</span>
-                          </div>
-
-                          <a
-                            href={msg.audio}
-                            download="generated-voice.wav"
-                            className="download-button"
-                          >
-                            Download
-                          </a>
+                          )}
                         </div>
+                      )}
 
-                        <audio
-                          controls
-                          src={msg.audio}
-                          className="audio-player"
-                        />
-
-                        {msg.prompt && (
-                          <div className="media-prompt">
-                            <span>Text</span>
-                            <p>{msg.prompt}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
+                    {/* Error */}
                     {msg.type === "error" && (
                       <div className="error-card">
                         <div className="error-icon">
@@ -383,7 +330,10 @@ export default function Home() {
                         </div>
 
                         <div>
-                          <strong>Something went wrong</strong>
+                          <strong>
+                            Something went wrong
+                          </strong>
+
                           <p>{msg.content}</p>
                         </div>
                       </div>
@@ -393,6 +343,7 @@ export default function Home() {
               </div>
             ))}
 
+            {/* Loading indicator */}
             {loading && (
               <div className="message-row message-row-assistant">
                 <div className="assistant-message">
@@ -418,9 +369,14 @@ export default function Home() {
               ref={inputRef}
               type="text"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) =>
+                setMessage(e.target.value)
+              }
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+                if (
+                  e.key === "Enter" &&
+                  !e.shiftKey
+                ) {
                   e.preventDefault();
                   sendMessage();
                 }
@@ -453,31 +409,18 @@ export default function Home() {
             </button>
           </div>
 
+          {/* Commands */}
           <div className="command-bar">
             <button
-              onClick={() => usePrompt("/image ")}
+              onClick={() =>
+                usePrompt("/image ")
+              }
               disabled={loading}
             >
-              <span className="command-symbol">+</span>
+              <span className="command-symbol">
+                +
+              </span>
               Image
-            </button>
-
-            <button
-              onClick={() => usePrompt("/voice ")}
-              disabled={loading}
-            >
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="9" y="3" width="6" height="12" rx="3" />
-                <path d="M5 11a7 7 0 0 0 14 0" />
-              </svg>
-              Voice
             </button>
 
             <span className="composer-hint">
@@ -486,7 +429,8 @@ export default function Home() {
           </div>
 
           <p className="disclaimer">
-            AI can make mistakes. Check important information.
+            AI can make mistakes. Check important
+            information.
           </p>
         </div>
       </div>

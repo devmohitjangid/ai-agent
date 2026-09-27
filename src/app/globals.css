@@ -230,11 +230,12 @@ button:disabled {
 ========================================= */
 
 .quick-actions {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 16px;
   width: 100%;
-  margin-top: 42px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  margin: 28px auto 0;
 }
 
 .quick-card {

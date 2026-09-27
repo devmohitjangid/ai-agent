@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@heyputer/puter.js": "^2.6.3",
     "@huggingface/inference": "^4.13.30",
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "ai": "^7.0.113",

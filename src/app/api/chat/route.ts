@@ -1,36 +1,58 @@
 import { openrouter } from "@/lib/openrouter";
 import { parseCommand } from "@/lib/commands";
 import { generateImage } from "@/lib/image-generator";
+
 import { generateText } from "ai";
-import { generateVoice } from "@/lib/voice-generator";
 
 export async function POST(req: Request) {
   try {
-    const { message } = await req.json();
+    const body = await req.json();
+    const message = body?.message;
 
-    if (!message || typeof message !== "string") {
+    if (
+      !message ||
+      typeof message !== "string" ||
+      !message.trim()
+    ) {
       return Response.json(
-        { error: "Message is required" },
-        { status: 400 }
+        {
+          error: "Message is required",
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    const command = parseCommand(message);
+    const cleanMessage = message.trim();
+    const command = parseCommand(cleanMessage);
 
-    // IMAGE
+    // =====================================================
+    // IMAGE GENERATION
+    // =====================================================
+
     if (command.type === "image") {
-      if (!command.prompt) {
+      if (!command.prompt?.trim()) {
         return Response.json(
-          { error: "Please provide an image prompt." },
-          { status: 400 }
+          {
+            error: "Please provide an image prompt.",
+          },
+          {
+            status: 400,
+          }
         );
       }
 
-      console.log("Generating image:", command.prompt);
+      console.log(
+        "Generating image:",
+        command.prompt
+      );
 
       const image = await generateImage(command.prompt);
 
-      console.log("Image generated successfully");
+      console.log(
+        "Image generated successfully"
+      );
 
       return Response.json({
         type: "image",
@@ -39,49 +61,73 @@ export async function POST(req: Request) {
       });
     }
 
-    // VOICE
-    if (command.type === "voice") {
-      if (!command.prompt) {
-        return Response.json(
-          { error: "Please provide text for voice generation." },
-          { status: 400 }
-        );
-      }
+    // =====================================================
+    
+    // =====================================================
+    // NORMAL QUESTION / ANSWER
+    // =====================================================
 
-      console.log("Generating voice:", command.prompt);
+    console.log(
+      "Generating chat response:",
+      cleanMessage
+    );
 
-      const audio = await generateVoice(command.prompt);
-
-      console.log("Voice generated successfully");
-
-      return Response.json({
-        type: "voice",
-        prompt: command.prompt,
-        audio,
-      });
-    }
-
-    // NORMAL CHAT
     const result = await generateText({
       model: openrouter("openrouter/free"),
-      prompt: command.prompt,
+
+      system: `
+You are a helpful AI assistant.
+
+Answer the user's questions clearly and accurately.
+
+Keep responses concise when the question is simple.
+Give more detailed explanations when necessary.
+
+Use Markdown when useful.
+Do not unnecessarily repeat the user's question.
+      `.trim(),
+
+      prompt: command.prompt?.trim() || cleanMessage,
     });
+
+    if (!result.text?.trim()) {
+      throw new Error(
+        "The AI returned an empty response."
+      );
+    }
+
+    console.log(
+      "Chat response generated successfully"
+    );
 
     return Response.json({
       type: "chat",
       reply: result.text,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Chat API error:", error);
+
+    let message = "AI request failed";
+
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error
+    ) {
+      message = String(
+        (error as { message: unknown }).message
+      );
+    }
 
     return Response.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "AI request failed",
+        error: message,
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
